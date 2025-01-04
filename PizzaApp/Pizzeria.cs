@@ -8,9 +8,7 @@ public class Pizzeria
     public string Adresa { get; set; }
     public List<Pizza> Meniu { get; private set; }
     
-    public List<Comanda> Comenzi { get; private set; }
     
-    public List<Ingredient> Ingrediente { get; private set; }
 
     private const string FisierComenzi = "comenzi.txt";
 
@@ -143,6 +141,6 @@ public class Pizzeria
            Console.WriteLine(comanda); 
         }
     }
-
-   
-}
+    
+        
+    }
