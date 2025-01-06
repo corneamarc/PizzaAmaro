@@ -4,26 +4,28 @@ using System.Linq;
 
 namespace PizzeriaAmaro
 {
-    public class PizzaPersonalizata : Pizza
-    { 
-        private const decimal CostPersonalizat = 30m;
+    public class PersonalizataPizza:Pizza
+    {
+        private const decimal PretPersonalizat = 30;
 
-        public PizzaPersonalizata(string nume, Dimensiune dimensiune, List<Ingredient> ingrediente)
-            : base(nume, dimensiune, 0, ingrediente) { }
-
-        public override decimal CalculeazaPret()
+        public PersonalizataPizza(string name, string dimensiune, List<Ingrediente> ingredient): base(name, dimensiune, ingredient)
         {
-            decimal costTotal = CostPersonalizat;
-            foreach (var ingredient in Ingrediente)
-            {
-                costTotal += ingredient.Cost;
-            }
-            return costTotal;
+        
         }
 
-        public void AdaugaIngredient(Ingredient ingredient)
+        public decimal CalculeazaPretPersonalizat()
         {
-            Ingrediente.Add(ingredient);
+            decimal ingredientePret = 0;
+            foreach (var ingrediente in Ingredient)
+            {
+                ingredientePret += ingrediente.Pret;
+            }
+            return ingredientePret + PretPersonalizat;
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + $", PretPersonalizat: {CalculeazaPretPersonalizat()}";
         }
     }
 }

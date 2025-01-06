@@ -2,33 +2,33 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PizzeriaAmaro
 {
+    public enum DimensiunePizza{Mica, Medie, Mare}
+    
     public abstract class Pizza
     {
-        public string Nume { get; set; }
-        public Dimensiune DimensiunePizza { get; set; }
-        public decimal PretDeBaza { get; set; }
-        public List<Ingredient> Ingrediente { get; set; }
+        public string Nume{get; set;}
+        public string Dimensiune {get; set;}
+        
+        public decimal Pret {get; set;}
+        public List<Ingrediente> Ingredient { get; set; }
 
-        public Pizza(string nume, Dimensiune dimensiune, decimal pretDeBaza, List<Ingredient> ingrediente)
+        public Pizza(string nume, string dimensiune, List<Ingrediente> ingredient)
         {
             Nume = nume;
-            DimensiunePizza = dimensiune;
-            PretDeBaza = pretDeBaza;
-            Ingrediente = new List<Ingredient>();
+            Dimensiune = dimensiune;
+            Ingredient = ingredient;
         }
-
 
         public abstract decimal CalculeazaPret();
 
         public override string ToString()
         {
-            return $"{Nume} {DimensiunePizza} ingrediente:{string.Join(",", Ingrediente)}";
+            return $"{Nume} {Dimensiune} ingrediente:{string.Join(",", Ingredient)}";
         }
     }
+    
 }
+

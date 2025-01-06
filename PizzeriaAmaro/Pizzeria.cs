@@ -9,8 +9,9 @@ namespace PizzeriaAmaro
     {
         public string Nume { get; set; }
         public string Adresa { get; set; }
-        public List<Pizza> Meniu { get; set; }
-        public List<Comanda> Comenzi { get; set; }
+        public List<Pizza> Meniu { get; private set; }
+        public List<Comanda> Comenzi { get; private set; }
+        public List<Client> Clienti { get; private set; }
 
         public Pizzeria(string nume, string adresa)
         {
@@ -18,25 +19,44 @@ namespace PizzeriaAmaro
             Adresa = adresa;
             Meniu = new List<Pizza>();
             Comenzi = new List<Comanda>();
+            Clienti = new List<Client>();
         }
-        
-        public void AdaugaComanda(Comanda comanda)
+
+        public void AddPizza(Pizza pizza)
+        {
+            Meniu.Add(pizza);
+        }
+
+        public void AddClient(Client client)
+        {
+            Clienti.Add(client);
+            Console.WriteLine();
+        }
+
+        public void AddOrder(Comanda comanda)
         {
             Comenzi.Add(comanda);
-            Console.WriteLine("Comanda a fost plasată cu succes.");
+            Console.WriteLine($"pizza {Pizza.Nume} a fost adaugata in meniu");
         }
-        
 
-        private void SalveazaComanda(Comanda comanda)
+        public void AfisareMeniu()
         {
-            string filePath = "orders.txt";
-            using (StreamWriter writer = new StreamWriter(filePath, true))
+            Console.WriteLine("Meniu:");
+            foreach (var pizza in Meniu)
             {
-                writer.WriteLine(comanda.ToString());
+                Console.WriteLine(pizza);
+          
             }
         }
-        
-    
+
+        public void AfisareComanda()
+        {
+            Console.WriteLine("Comenzi inregisrate:");
+            foreach (var comanda in Comenzi)
+            {
+                Console.WriteLine(comanda);
+            }
+        }
+
     }
-}
 

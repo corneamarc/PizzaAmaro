@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
 
 namespace PizzeriaAmaro
 {
-    public class Comanda
+    public class Ingrediente
     {
         
     }
 }
+

@@ -4,14 +4,26 @@ using System.Linq;
 
 namespace PizzeriaAmaro
 {
-    public class PizzaStandard : Pizza
+    public class StandardPizza : Pizza
     {
-        public PizzaStandard(string nume, Dimensiune dimensiune, decimal pretDeBaza, List<Ingredient> ingrediente)
-            : base(nume, dimensiune, pretDeBaza, ingrediente) { }
+        private decimal PretFix { get; set; }
 
-        public override decimal CalculeazaPret()
+        public StandardPizza(string nume, string dimensiune, decimal pretfix, List<Ingrediente> ingredient) : base(nume,
+            dimensiune, ingredient)
         {
-            return PretDeBaza;
+            PretFix = pretfix;
+        }
+
+        public decimal CalculeazaPretBaza()
+        {
+            return PretFix;
+        }
+
+        public override string ToString()
+        {
+            return $"PretBaza: {PretFix} RON";
         }
     }
+            
+    
 }
