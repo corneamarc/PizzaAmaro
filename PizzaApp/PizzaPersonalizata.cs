@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 namespace PizzaAmaro;
 
 public class PizzaPersonalizata : Pizza
@@ -9,11 +13,8 @@ public class PizzaPersonalizata : Pizza
 
     public override decimal CalculeazaPret()
     {
-        decimal pretIngredient = 0;
-        foreach (var ingredient in Ingrediente)
-        {
-            pretIngredient += 5m; // Exemplu de pret fix per ingredient
-        }
+        decimal pretIngredient = Ingrediente
+            .Sum(ingredient => Program.Ingrediente.FirstOrDefault(i => i.Nume == ingredient)?.Pret ?? 0);
         return pretIngredient + CostPersonalizare;
     }
 
@@ -23,4 +24,5 @@ public class PizzaPersonalizata : Pizza
     }
 }
 
+// Enumerare pentru dimensiuni pizza
 public enum DimensiunePizza { Mica, Medie, Mare }

@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 namespace PizzaAmaro;
 
 public class Client
@@ -16,6 +17,12 @@ public class Client
     public bool EsteFidel()
     {
         return IstoricComenzi.Count >= 5;
+    }
+
+    public static bool VerificaNumarTelefon(string numarTelefon)
+    {
+        var regex = new Regex(@"^(\+40|07)[0-9]{8}$");
+        return regex.IsMatch(numarTelefon);
     }
 
     public override string ToString()

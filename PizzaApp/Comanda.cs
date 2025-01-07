@@ -17,22 +17,9 @@ public class Comanda
 
     private void CalculeazaCostTotal()
     {
-        decimal cost = 0;
-        foreach (var pizza in PizzeComandate)
-        {
-            cost += pizza.CalculeazaPret();
-        }
-
-        if (EsteLivrareLaDomiciliu)
-        {
-            cost += 10; 
-        }
-
-        if (Client.EsteFidel())
-        {
-            cost *= 0.9m; 
-        }
-
+        decimal cost = PizzeComandate.Sum(pizza => pizza.CalculeazaPret());
+        if (EsteLivrareLaDomiciliu) cost += 10;
+        if (Client.EsteFidel()) cost *= 0.9m;
         CostTotal = cost;
     }
 
@@ -41,6 +28,5 @@ public class Comanda
         return $"Comanda pentru {Client.Nume}, Cost: {CostTotal} RON, Livrare: {(EsteLivrareLaDomiciliu ? "Da" : "Nu")}";
     }
 }
-
 
   
