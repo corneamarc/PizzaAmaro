@@ -12,7 +12,7 @@
                 Console.WriteLine("Meniu:");
                 Console.WriteLine("1. Adauga client");
                 Console.WriteLine("2. Comanda pizza");
-                Console.WriteLine("4. Iesi");
+                Console.WriteLine("3. Iesi");
                 Console.Write("Alege o optiune: ");
                 string optiune = Console.ReadLine();
 
@@ -24,7 +24,7 @@
                     case "2":
                         ComandaPizza(clienti, comenzi);
                         break;
-                    case "4":
+                    case "3":
                         return;
                     default:
                         Console.WriteLine("Optiune invalida. Te rog sa incerci din nou.");
@@ -129,5 +129,6 @@
             client.Comenzi.Add(comanda);
             Console.WriteLine("Comanda a fost plasata cu succes.");
         }
+        
     }
 }        
