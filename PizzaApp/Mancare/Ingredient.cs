@@ -1,19 +1,24 @@
 using System;
 using System.Collections.Generic;
-
-namespace PizzaApp.Mancare;
-
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+namespace PizzaApp.Mancare; 
 public class Ingredient
 {
-    private string _nume;
-    private decimal _pret;
+    public string Name { get; set; }
+    public decimal Cost { get; set; }
 
-    public Ingredient(string nume, decimal pret)
+    public Ingredient() { }
+
+    public Ingredient(string name, decimal cost)
     {
-        _nume = nume;
-        _pret = pret;
+        Name = name;
+        Cost = cost;
     }
-    
-    public string Nume => _nume;
-    public decimal Pret => _pret;
+
+    public string GetName() => Name;
+    public decimal GetCost() => Cost;
+    public void SetCost(decimal cost) => Cost = cost;
 }

@@ -1,28 +1,37 @@
-/*namespace PizzaApp.Mancare;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+namespace PizzaApp.Mancare; 
 
 public class Client
-{
-    public string Nume { get; }
-    public string Telefon { get; }
-
-    public Client(string nume, string telefon)
     {
-        if (string.IsNullOrWhiteSpace(nume))
+        [JsonIgnore]
+        public List<Order> OrderHistory { get; set; }
+        public string Name { get; set; }
+        public string PhoneNumber { get; set; }
+
+        public Client()
         {
-            throw new ArgumentException("Numele clientului nu poate fi gol.");
+            OrderHistory = new List<Order>();
         }
 
-        if (!IsValidPhoneNumber(telefon))
+        public Client(string name, string phoneNumber) : this()
         {
-            throw new ArgumentException("Numărul de telefon nu este valid.");
+            Name = name;
+            PhoneNumber = phoneNumber;
         }
 
-        Nume = nume;
-        Telefon = telefon;
+        public string GetName() => Name;
+        public string GetPhoneNumber() => PhoneNumber;
+        public List<Order> GetOrderHistory() => OrderHistory ?? (OrderHistory = new List<Order>());
+        public void AddOrder(Order order)
+        {
+            if (OrderHistory == null)
+                OrderHistory = new List<Order>();
+            OrderHistory.Add(order);
+        }
+        public bool IsLoyalCustomer() => GetOrderHistory().Count >= 5;
     }
-
-    private bool IsValidPhoneNumber(string phoneNumber)
-    {
-        return phoneNumber.StartsWith("+407") && phoneNumber.Length == 13;
-    }
-}*/
