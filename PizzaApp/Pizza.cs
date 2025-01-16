@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization.Metadata;
+
 namespace PizzaApp;
 
 public abstract class Pizza
@@ -17,4 +19,14 @@ public abstract class Pizza
     }
 
     public abstract decimal CalculeazaPret();
+
+    public void AdaugaIngrediente(Ingredient ingrediente)
+    {
+        Ingrediente.Add(ingrediente);
+    }
+
+    public override string ToString()
+    {
+        return $"nume {Nume}, dimensiune: {Dimensiune}, ingrediente {Ingrediente}, pret: {CalculeazaPret()} RON";
+    }
 }

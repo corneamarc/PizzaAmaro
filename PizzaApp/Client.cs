@@ -10,7 +10,10 @@ public class Client
     
     public bool EsteAutentificat{ get; set; }
     
-    public bool EsteFidel => IstoricComenzi.Count >= 5;
+    public bool EsteFidel()
+    {
+        return IstoricComenzi.Count >= 5;
+    }
 
     public void Autentificare(string telefon)
     {
@@ -44,5 +47,32 @@ public class Client
     public void AdaugaLaIstoric(Comanda comanda)
     {
         IstoricComenzi.Add(comanda);
+    }
+    
+    public decimal CalculeazaReducere(decimal total)
+    {
+        if (EsteFidel())
+        {
+            Console.WriteLine($"{Nume} beneficiaza de o reducere de 10%.");
+            return total * 0.9m;
+        }
+        return total;
+    }
+    
+    
+    public void AfiseazaDetalii()
+    {
+        Console.WriteLine($"Clienti:{Nume}");
+        Console.WriteLine($"Numar de telefon:{NrTelefon}");
+        Console.WriteLine($"Numar Comenzi:{IstoricComenzi.Count}");
+
+        if (EsteFidel())
+        {
+            Console.WriteLine("Status:Client fidel(Reducere de 10%) ");
+        }
+        else
+        {
+            Console.WriteLine("Status:Client normal");
+        }
     }
 }
