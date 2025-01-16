@@ -1,43 +1,39 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+namespace PizzaApp.Mancare; 
 
-namespace PizzaApp.Mancare;
-public enum Dimensiune { Mica, Medie, Mare }
+public enum PizzaSize { Small, Medium, Large }
 
-public abstract class Pizza
+public class Pizza
 {
-    private string _nume;
-    private decimal _pretDeBaza;
-    //public enum Dimensiune { Mica, Medie, Mare }
-    private Dimensiune _dimensiune;
-    private List<Ingredient> _ingrediente;
+    public string Name { get; set; }
+    public PizzaSize Size { get; set; }
+    public decimal BasePrice { get; set; }
+    public List<Ingredient> Ingredients { get; set; }
 
-    public Pizza(string nume, Dimensiune dimensiune, decimal pretDeBaza)
+    public Pizza() 
     {
-        _nume = nume;
-        _dimensiune = dimensiune;
-        _pretDeBaza = pretDeBaza;
-        _ingrediente = new List<Ingredient>();
-    }
-    
-    public string Nume => _nume;
-    public Dimensiune Dimensiune => _dimensiune;
-    public List<Ingredient> Ingrediente => _ingrediente;
-    public abstract decimal CalculeazaPret();
-
-    public void AdaugaIngredient(Ingredient ingredient)
-    {
-        _ingrediente.Add(ingredient);
-    }
-    
-    //Afisare
-    public override string ToString()
-    {
-        string ingredienteStr = _ingrediente.Count > 0
-            ? string.Join(",", _ingrediente.ConvertAll(i => i.Nume))
-            : "Fara ingrediente";
-
-        return $"{_nume} ({_dimensiune}): Ingrediente: {ingredienteStr} - {CalculeazaPret()} RON";
+        Ingredients = new List<Ingredient>();
     }
 
+    public Pizza(string name, PizzaSize size, decimal basePrice, List<Ingredient> ingredients)
+    {
+        Name = name;
+        Size = size;
+        BasePrice = basePrice;
+        Ingredients = ingredients ?? new List<Ingredient>();
+    }
+
+    public string GetName() => Name;
+    public PizzaSize GetSize() => Size;
+    public decimal GetBasePrice() => BasePrice;
+    public List<Ingredient> GetIngredients() => Ingredients;
+    public decimal GetPrice() => BasePrice + Ingredients.Sum(i => i.Cost);
+    public void SetSize(PizzaSize size) => Size = size;
+    public void SetBasePrice(decimal basePrice) => BasePrice = basePrice;
+    public void SetIngredients(List<Ingredient> ingredients) => Ingredients = ingredients;
 }
