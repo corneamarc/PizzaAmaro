@@ -23,7 +23,7 @@ public class Comanda
             cost += 10;
         }
 
-        if (Client.EsteFidel)
+        if (Client.EsteFidel())
         {
             cost *= 0.9m;
         }

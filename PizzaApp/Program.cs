@@ -134,5 +134,12 @@ namespace PizzaApp
             var nume = Console.ReadLine();
             pizzeria.StergeIngredient(nume);
         }
+        
+        private static void PlaseazaComanda(Pizzeria pizzeria, Client client)
+        {
+            Console.WriteLine("Doriți livrare la domiciliu? (da/nu)");
+            var livrareDomiciliu = Console.ReadLine().ToLower() == "da";
+            pizzeria.PlaseazaComanda(client, livrareDomiciliu);
+        }
     }
 }
