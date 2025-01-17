@@ -692,7 +692,7 @@ class Program
         static void ViewOrdersByDate(Pizzeria pizzeria, IConsoleService consoleService)
         {
             // Solicităm data pentru care dorim să vedem comenzile
-            consoleService.WriteLine("\nIntroduceti data pentru care doriti sa vedeti comenzile (format: dd/MM/yyyy):");
+            consoleService.WriteLine("\nIntroduceti data pentru care doriti sa vedeti comenzile (format: mm/dd/yyyy):");
             if (DateTime.TryParse(consoleService.ReadLine(), out DateTime date))
             {
                 // Obținem toate comenzile din ziua respectivă
@@ -722,7 +722,7 @@ class Program
 
                 // Afișăm sumarul zilei
                 consoleService.WriteLine($"\nTotal comenzi in aceasta zi: {orders.Count}");
-                consoleService.WriteLine($"Valoare totală: {orders.Sum(o => o.GetTotalCost())} RON");
+                consoleService.WriteLine($"Valoare totala: {orders.Sum(o => o.GetTotalCost())} RON");
             }
             else
             {
@@ -753,7 +753,7 @@ class Program
                 // Afișăm detaliile pentru fiecare pizza
                 consoleService.WriteLine($"{rank}. {pizza.GetName()}");
                 consoleService.WriteLine($"   Comenzi: {orderCount}");
-                consoleService.WriteLine($"   Preț: {pizza.GetPrice()} RON");
+                consoleService.WriteLine($"   Pret: {pizza.GetPrice()} RON");
                 consoleService.WriteLine($"   Ingrediente: {string.Join(", ", pizza.GetIngredients().Select(i => i.GetName()))}");
                 consoleService.WriteLine("-------------------");
                 rank++;
@@ -773,7 +773,7 @@ class Program
             consoleService.WriteLine("Introduceti data de sfarsit (format: dd/MM/yyyy):");
             if (!DateTime.TryParse(consoleService.ReadLine(), out DateTime endDate))
             {
-                consoleService.WriteLine("Format data invalid. Vă rugam sa folositi formatul dd/MM/yyyy");
+                consoleService.WriteLine("Format data invalid. Va rugam sa folositi formatul dd/MM/yyyy");
                 return;
             }
 
@@ -807,7 +807,7 @@ class Program
                 consoleService.WriteLine($"Comenzi cu livrare: {deliveryOrders} ({deliveryPercentage:F1}%)");
                 
                 var mostExpensiveOrder = ordersInPeriod.MaxBy(o => o.GetTotalCost());
-                consoleService.WriteLine($"Cea mai mare comandă: {mostExpensiveOrder.GetTotalCost()} RON");
+                consoleService.WriteLine($"Cea mai mare comanda: {mostExpensiveOrder.GetTotalCost()} RON");
             }
         }
     }
