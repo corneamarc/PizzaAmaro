@@ -8,28 +8,34 @@ using PizzaApp.Mancare;
 using PizzaApp;
 class Program
     {
+        /// <summary>
+        /// Metoda principală a aplicației care gestionează întregul flux al programului
+        /// </summary>
         private static void Main(string[] args)
         {
             try
             {
+                // Handler pentru închiderea aplicației - se asigură că totul este salvat corect
                 AppDomain.CurrentDomain.ProcessExit += (s, e) =>
                 {
-                    // Cleanup code here
                     Console.WriteLine("Application shutting down...");
                 };
 
-                var consoleService = new ConsoleService();
-                var fileService = new FileService();
+                // Inițializăm serviciile necesare
+                var consoleService = new ConsoleService();      // Pentru interacțiunea cu consola
+                var fileService = new FileService();            // Pentru operații cu fișiere
                 
+                // Definim căile către fișierele de date
                 string appPath = AppDomain.CurrentDomain.BaseDirectory;
                 string pizzeriaFilePath = Path.Combine(appPath, "pizzeria_state.json");
                 string usersFilePath = Path.Combine(appPath, "users_state.json");
 
+                // Încărcăm starea pizzeriei și a utilizatorilor din fișiere
                 var pizzeria = Pizzeria.LoadState(pizzeriaFilePath, fileService);
                 var authService = new AuthenticationService();
                 authService.LoadUsers(usersFilePath, fileService);
 
-                // Adăugăm un admin implicit dacă nu există utilizatori
+                // Creăm un cont de admin implicit dacă nu există utilizatori
                 if (!fileService.Exists(usersFilePath))
                 {
                     authService.Register("admin", "admin", true);
@@ -37,9 +43,10 @@ class Program
                     authService.SaveUsers(usersFilePath, fileService);
                 }
 
-                // Add some default data if necessary
+                // Adăugăm date implicite dacă meniul este gol
                 if (!pizzeria.GetIngredients().Any())
                 {
+                    // Ingrediente de bază
                     pizzeria.AddIngredient(new Ingredient("Cheese", 5));
                     pizzeria.AddIngredient(new Ingredient("Pepperoni", 7));
                     pizzeria.AddIngredient(new Ingredient("Mushrooms", 4));
@@ -47,13 +54,19 @@ class Program
             
                 if (!pizzeria.GetMenu().Any())
                 {
-                    pizzeria.AddPizzaToMenu(new Pizza("Margherita", PizzaSize.Medium, 20, new List<Ingredient> { pizzeria.GetIngredients()[0] }));
-                    pizzeria.AddPizzaToMenu(new Pizza("Pepperoni", PizzaSize.Large, 25, new List<Ingredient> { pizzeria.GetIngredients()[0], pizzeria.GetIngredients()[1] }));
+                    // Pizza-uri standard în meniu
+                    pizzeria.AddPizzaToMenu(new Pizza("Margherita", PizzaSize.Medium, 20, 
+                        new List<Ingredient> { pizzeria.GetIngredients()[0] }));
+                    pizzeria.AddPizzaToMenu(new Pizza("Pepperoni", PizzaSize.Large, 25, 
+                        new List<Ingredient> { pizzeria.GetIngredients()[0], pizzeria.GetIngredients()[1] }));
                 }
             
                 User loggedInUser = null;
+
+                // Bucla principală a aplicației
                 while (true)
                 {
+                    // Meniul principal
                     consoleService.WriteLine("Bine ati venit la Pizza Amaro!");
                     consoleService.WriteLine("Alege o varianta:");
                     consoleService.WriteLine("1. Log in");
@@ -64,7 +77,7 @@ class Program
                     string choice = consoleService.ReadLine();
                     switch (choice)
                     {
-                        case "1":
+                        case "1": // Autentificare utilizator
                             consoleService.WriteLine("Nume:");
                             string username = consoleService.ReadLine();
                             consoleService.WriteLine("Parola:");
@@ -73,6 +86,7 @@ class Program
             
                             if (loggedInUser != null)
                             {
+                                // Direcționăm utilizatorul către meniul corespunzător (admin sau user)
                                 if (loggedInUser.GetIsAdmin())
                                 {
                                     AdminMenu(pizzeria, consoleService, authService, fileService);
@@ -84,7 +98,7 @@ class Program
                             }
                             break;
             
-                        case "2":
+                        case "2": // Înregistrare utilizator nou
                             consoleService.WriteLine("Nume:");
                             string newUsername = consoleService.ReadLine();
                             consoleService.WriteLine("Parola:");
@@ -92,6 +106,7 @@ class Program
                             consoleService.WriteLine("Admin? (yes/no):");
                             bool isAdmin = consoleService.ReadLine().ToLower() == "yes";
                             
+                            // Pentru utilizatori non-admin, cerem numărul de telefon
                             string phoneNumber = null;
                             if (!isAdmin)
                             {
@@ -102,14 +117,14 @@ class Program
                             authService.Register(newUsername, newPassword, isAdmin, phoneNumber);
                             break;
             
-                        case "3":
+                        case "3": // Vizualizare meniu în mod guest
                             ViewMenu(pizzeria, consoleService);
                             consoleService.WriteLine("You are in guest mode. Please log in or register to place orders.");
                             break;
             
-                        case "4":
+                        case "4": // Ieșire din aplicație
                             consoleService.WriteLine("Thank you for using the Pizzeria App. Goodbye!");
-                            // Salvăm starea înainte de a ieși
+                            // Salvăm starea înainte de ieșire
                             pizzeria.SaveState(pizzeriaFilePath, fileService);
                             authService.SaveUsers(usersFilePath, fileService);
                             return;
@@ -126,33 +141,41 @@ class Program
             }
             catch (Exception ex)
             {
+                // Gestionarea erorilor neașteptate
                 Console.WriteLine($"An error occurred: {ex.Message}");
                 Console.WriteLine("Press any key to exit...");
                 Console.ReadKey();
             }
             finally
             {
-                // Asigură-te că procesul se închide complet
+                // Ne asigurăm că procesul se închide complet
                 Environment.Exit(0);
             }
         }
 
-
+        /// <summary>
+        /// Meniul administratorului - oferă acces la toate funcționalitățile de management
+        /// </summary>
         static void AdminMenu(Pizzeria pizzeria, IConsoleService consoleService, AuthenticationService authService, IFileService fileService)
         {
             while (true)
             {
+                // Afișăm opțiunile disponibile pentru administrator
                 consoleService.WriteLine("\nAdmin Menu:");
+                // Opțiuni pentru gestionarea meniului
                 consoleService.WriteLine("1. Vizualizare Meniu");
                 consoleService.WriteLine("2. Adauga Pizza");
                 consoleService.WriteLine("3. Sterge Pizza");
                 consoleService.WriteLine("4. Actualizeaza Pizza");
+                // Opțiuni pentru gestionarea ingredientelor
                 consoleService.WriteLine("5. Vizualizare Ingrediente");
                 consoleService.WriteLine("6. Adauga Ingredient");
                 consoleService.WriteLine("7. Sterge Ingredient");
                 consoleService.WriteLine("8. Actualizeaza pretul Ingredientului");
+                // Opțiuni pentru gestionarea clienților și comenzilor
                 consoleService.WriteLine("9. Vizualizeaza istoricul comenzilor pentru un client");
                 consoleService.WriteLine("10. Inregistreaza noi clienti");
+                // Rapoarte și statistici
                 consoleService.WriteLine("\nRapoarte si Statistici:");
                 consoleService.WriteLine("11. Vizualizare comenzi pe zi");
                 consoleService.WriteLine("12. Raport pizza populara");
@@ -162,47 +185,29 @@ class Program
                 string choice = consoleService.ReadLine();
                 switch (choice)
                 {
-                    case "1":
-                        ViewMenu(pizzeria, consoleService);
-                        break;
-                    case "2":
-                        AddPizza(pizzeria, consoleService);
-                        break;
-                    case "3":
-                        RemovePizza(pizzeria, consoleService);
-                        break;
-                    case "4":
-                        UpdatePizza(pizzeria, consoleService);
-                        break;
-                    case "5":
-                        ViewIngredients(pizzeria, consoleService);
-                        break;
-                    case "6":
-                        AddIngredient(pizzeria, consoleService);
-                        break;
-                    case "7":
-                        RemoveIngredient(pizzeria, consoleService);
-                        break;
-                    case "8":
-                        UpdateIngredientPrice(pizzeria, consoleService);
-                        break;
-                    case "9":
-                        ViewOrderHistoryForClient(pizzeria, consoleService);
-                        break;
-                    case "10":
-                        RegisterNewUser(consoleService, authService, fileService);
-                        break;
-                    case "11":
-                        ViewOrdersByDate(pizzeria, consoleService);
-                        break;
-                    case "12":
-                        ViewPopularPizzas(pizzeria, consoleService);
-                        break;
-                    case "13":
-                        ViewRevenueReport(pizzeria, consoleService);
-                        break;
-                    case "14":
-                        return;
+                    // Gestionare meniu
+                    case "1": ViewMenu(pizzeria, consoleService); break;
+                    case "2": AddPizza(pizzeria, consoleService); break;
+                    case "3": RemovePizza(pizzeria, consoleService); break;
+                    case "4": UpdatePizza(pizzeria, consoleService); break;
+                    
+                    // Gestionare ingrediente
+                    case "5": ViewIngredients(pizzeria, consoleService); break;
+                    case "6": AddIngredient(pizzeria, consoleService); break;
+                    case "7": RemoveIngredient(pizzeria, consoleService); break;
+                    case "8": UpdateIngredientPrice(pizzeria, consoleService); break;
+                    
+                    // Gestionare clienți și comenzi
+                    case "9": ViewOrderHistoryForClient(pizzeria, consoleService); break;
+                    case "10": RegisterNewUser(consoleService, authService, fileService); break;
+                    
+                    // Rapoarte și statistici
+                    case "11": ViewOrdersByDate(pizzeria, consoleService); break;
+                    case "12": ViewPopularPizzas(pizzeria, consoleService); break;
+                    case "13": ViewRevenueReport(pizzeria, consoleService); break;
+                    
+                    case "14": return; // Ieșire din meniul admin
+                    
                     default:
                         consoleService.WriteLine("Invalid choice. Please try again.");
                         break;
@@ -210,32 +215,39 @@ class Program
             }
         }
 
+        /// <summary>
+        /// Meniul utilizatorului normal - permite vizualizarea meniului și plasarea comenzilor
+        /// </summary>
         static void UserMenu(Pizzeria pizzeria, User loggedInUser, IConsoleService consoleService)
         {
+            // Creăm un obiect Client pentru utilizatorul autentificat
+            // Acest obiect va fi folosit pentru a gestiona comenzile și istoricul
             Client client = new Client(loggedInUser.GetUsername(), loggedInUser.GetPhoneNumber());
 
             while (true)
             {
+                // Afișăm opțiunile disponibile pentru client
                 consoleService.WriteLine("User Meniu:");
-                consoleService.WriteLine("1. Vizualizare Meniu");
-                consoleService.WriteLine("2. Comanda");
-                consoleService.WriteLine("3. Vizualizare istoric meniu");
-                consoleService.WriteLine("4. Exit");
+                consoleService.WriteLine("1. Vizualizare Meniu");           // Vizualizare produse disponibile
+                consoleService.WriteLine("2. Comanda");                     // Plasare comandă nouă
+                consoleService.WriteLine("3. Vizualizare istoric meniu");   // Istoric comenzi personale
+                consoleService.WriteLine("4. Exit");                        // Ieșire din meniu
 
                 string choice = consoleService.ReadLine();
                 switch (choice)
                 {
                     case "1":
-                        ViewMenu(pizzeria, consoleService);
+                        ViewMenu(pizzeria, consoleService);                 // Afișează meniul complet
                         break;
                     case "2":
-                        PlaceOrder(pizzeria, client, consoleService);
+                        PlaceOrder(pizzeria, client, consoleService);       // Procesează o nouă comandă
                         break;
                     case "3":
+                        // Afișează istoricul comenzilor pentru clientul curent
                         ViewOrderHistoryForClient(pizzeria, consoleService, client);
                         break;
                     case "4":
-                        return;
+                        return;                                             // Ieșire din meniul utilizatorului
                     default:
                         consoleService.WriteLine("Invalid choice. Please try again.");
                         break;
@@ -245,13 +257,19 @@ class Program
 
         static void RegisterNewUser(IConsoleService consoleService, AuthenticationService authService, IFileService fileService)
         {
+            // Colectăm informațiile necesare pentru înregistrare
             consoleService.WriteLine("Nume:");
             string username = consoleService.ReadLine();
+            
+            // Citim parola în mod securizat (caractere ascunse)
             consoleService.WriteLine("Parola:");
             string password = ((ConsoleService)consoleService).ReadPassword();
+            
+            // Determinăm dacă utilizatorul va fi admin
             consoleService.WriteLine("Admin? (yes/no):");
             bool isAdmin = consoleService.ReadLine().ToLower() == "yes";
 
+            // Pentru utilizatorii non-admin, cerem și numărul de telefon
             string phoneNumber = null;
             if (!isAdmin)
             {
@@ -259,70 +277,207 @@ class Program
                 phoneNumber = consoleService.ReadLine();
             }
 
+            // Înregistrăm utilizatorul în sistem
             authService.Register(username, password, isAdmin, phoneNumber);
             
+            // Salvăm modificările în fișierul de utilizatori
             string usersFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "users_state.json");
             authService.SaveUsers(usersFilePath, fileService);
         }
 
+        /// <summary>
+        /// Metodă pentru plasarea unei comenzi noi
+        /// Permite alegerea între pizza standard și personalizată
+        /// </summary>
         static void PlaceOrder(Pizzeria pizzeria, Client client, IConsoleService consoleService)
         {
+            // Validăm clientul
             if (client == null)
             {
                 consoleService.WriteLine("Error: Informatii despre client gresite.");
                 return;
             }
 
-            // Adăugăm clientul în dicționarul pizzeriei
+            // Înregistrăm/actualizăm clientul în sistemul pizzeriei
             pizzeria.AddClient(client);
 
+            // Lista pentru stocarea pizzelor comandate
             List<Pizza> pizzas = new List<Pizza>();
-            ViewMenu(pizzeria, consoleService);
-            while (true)
+            bool finishOrder = false;
+
+            // Bucla pentru adăugarea pizzelor în comandă
+            while (!finishOrder)
             {
-                consoleService.WriteLine("Alege pizza pentru comanda (or 'done'):");
-                string pizzaName = consoleService.ReadLine();
-                if (pizzaName?.ToLower() == "done")
+                // Meniul de selecție a tipului de pizza
+                consoleService.WriteLine("\nAlege tipul de pizza:");
+                consoleService.WriteLine("1. Pizza Standard (pret fix in functie de dimensiune)");
+                consoleService.WriteLine("2. Pizza Personalizata (pret bazat pe ingrediente + 30 RON)");
+                consoleService.WriteLine("3. Finalizare comanda");
+
+                string choice = consoleService.ReadLine();
+                switch (choice)
                 {
-                    break;
-                }
-                var pizza = pizzeria.GetMenu().FirstOrDefault(p => p.GetName() == pizzaName);
-                if (pizza != null)
-                {
-                    // Creăm o copie a pizza pentru comandă
-                    var orderPizza = new Pizza(pizza.GetName(), pizza.GetSize(), pizza.GetBasePrice(), pizza.GetIngredients().ToList());
-                    pizzas.Add(orderPizza);
-                    consoleService.WriteLine($"Adaugat {pizza.GetName()} la comanda.");
-                }
-                else
-                {
-                    consoleService.WriteLine("Nu exista acest tip de pizza.");
+                    case "1": 
+                        AddStandardPizza(pizzeria, pizzas, consoleService);    // Adăugare pizza din meniu
+                        break;
+                    case "2": 
+                        AddCustomPizza(pizzeria, pizzas, consoleService);      // Creare pizza personalizată
+                        break;
+                    case "3": 
+                        finishOrder = true;                                    // Finalizare comandă
+                        break;
+                    default:
+                        consoleService.WriteLine("Optiune invalida. Te rog incearca din nou.");
+                        break;
                 }
             }
 
+            // Verificăm dacă comanda conține cel puțin o pizza
             if (!pizzas.Any())
             {
-                consoleService.WriteLine("Order cannot be empty. Please add at least one pizza.");
+                consoleService.WriteLine("Comanda nu poate fi goala. Te rog adauga cel putin o pizza.");
                 return;
             }
 
-            consoleService.WriteLine("Doresti livrare? (yes/no):");
+            // Afișăm rezumatul comenzii pentru confirmare
+            consoleService.WriteLine("\nResumat comanda:");
+            foreach (var pizza in pizzas)
+            {
+                consoleService.WriteLine($"- {pizza.GetName()} ({pizza.GetSize()}) - {pizza.GetPrice()} RON");
+                consoleService.WriteLine("  Ingrediente: " + string.Join(", ", pizza.GetIngredients().Select(i => i.GetName())));
+            }
+
+            // Opțiunea de livrare (adaugă 10 RON la cost)
+            consoleService.WriteLine("\nDoresti livrare? (yes/no):");
             bool isDelivery = consoleService.ReadLine()?.ToLower() == "yes";
 
             try
             {
+                // Creăm și procesăm comanda
                 Order order = new Order(client, pizzas, isDelivery);
                 pizzeria.PlaceOrder(order);
-                consoleService.WriteLine($"Pretul total al comenzii: {order.GetTotalCost()} RON");
                 
-                // Salvăm starea după plasarea comenzii
+                // Calculăm și afișăm costul total
+                decimal totalCost = order.GetTotalCost();
+                consoleService.WriteLine($"\nPretul total al comenzii: {totalCost} RON");
+                
+                // Afișăm detalii despre taxe și reduceri aplicate
+                if (isDelivery)
+                {
+                    consoleService.WriteLine("(Include taxa de livrare: 10 RON)");
+                }
+                if (client.IsLoyalCustomer())
+                {
+                    consoleService.WriteLine("Client fidel! Ai primit reducere de 10%");
+                }
+                
+                // Salvăm starea actualizată a pizzeriei
                 SavePizzeriaState(pizzeria, new FileService());
-                consoleService.WriteLine("Comanda plasata!");
+                consoleService.WriteLine("\nComanda plasata cu succes!");
             }
             catch (Exception ex)
             {
-                consoleService.WriteLine($"Error placing order: {ex.Message}");
+                consoleService.WriteLine($"Eroare la plasarea comenzii: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Metodă pentru adăugarea unei pizza standard din meniu în comandă
+        /// </summary>
+        static void AddStandardPizza(Pizzeria pizzeria, List<Pizza> pizzas, IConsoleService consoleService)
+        {
+            // Afișăm meniul disponibil
+            ViewMenu(pizzeria, consoleService);
+            
+            // Selectăm pizza din meniu după nume
+            consoleService.WriteLine("\nAlege numele pizzei din meniu:");
+            string pizzaName = consoleService.ReadLine();
+            var pizza = pizzeria.GetMenu().FirstOrDefault(p => p.GetName() == pizzaName);
+            
+            if (pizza != null)
+            {
+                // Creăm o copie nouă a pizzei pentru comandă
+                // Acest lucru previne modificarea accidentală a pizzei din meniu
+                var orderPizza = new Pizza(
+                    pizza.GetName(), 
+                    pizza.GetSize(), 
+                    pizza.GetBasePrice(), 
+                    pizza.GetIngredients().ToList()
+                );
+                pizzas.Add(orderPizza);
+                consoleService.WriteLine($"Adaugat {pizza.GetName()} la comanda.");
+            }
+            else
+            {
+                consoleService.WriteLine("Pizza nu a fost gasita in meniu.");
+            }
+        }
+
+        /// <summary>
+        /// Metodă pentru crearea și adăugarea unei pizza personalizate în comandă
+        /// Preț de bază: 30 RON + costul ingredientelor
+        /// </summary>
+        static void AddCustomPizza(Pizzeria pizzeria, List<Pizza> pizzas, IConsoleService consoleService)
+        {
+            consoleService.WriteLine("\nCreaza pizza personalizata:");
+            
+            // Pasul 1: Alegerea dimensiunii
+            consoleService.WriteLine("Alege dimensiunea (Small/Medium/Large):");
+            if (!Enum.TryParse<PizzaSize>(consoleService.ReadLine(), true, out PizzaSize size))
+            {
+                consoleService.WriteLine("Dimensiune invalida. Pizza nu a fost adaugata.");
+                return;
+            }
+
+            // Pasul 2: Afișarea ingredientelor disponibile cu prețuri
+            consoleService.WriteLine("\nIngrediente disponibile:");
+            foreach (var ingredient in pizzeria.GetIngredients())
+            {
+                consoleService.WriteLine($"{ingredient.GetName()} - {ingredient.GetCost()} RON");
+            }
+
+            // Pasul 3: Selectarea ingredientelor
+            List<Ingredient> selectedIngredients = new List<Ingredient>();
+            while (true)
+            {
+                consoleService.WriteLine("\nIntrodu numele ingredientului (sau 'done' pentru a termina):");
+                string ingredientName = consoleService.ReadLine();
+                
+                if (ingredientName?.ToLower() == "done")
+                    break;
+
+                // Căutăm și adăugăm ingredientul selectat
+                var ingredient = pizzeria.GetIngredients().FirstOrDefault(i => i.GetName() == ingredientName);
+                if (ingredient != null)
+                {
+                    selectedIngredients.Add(ingredient);
+                    consoleService.WriteLine($"Adaugat {ingredient.GetName()} la pizza.");
+                }
+                else
+                {
+                    consoleService.WriteLine("Ingredient negasit. Te rog incearca din nou.");
+                }
+            }
+
+            // Verificăm dacă au fost selectate ingrediente
+            if (!selectedIngredients.Any())
+            {
+                consoleService.WriteLine("Trebuie sa alegi cel putin un ingredient.");
+                return;
+            }
+
+            // Pasul 4: Crearea pizzei personalizate
+            decimal basePrice = 30; // Preț de bază fix pentru pizza personalizată
+            var customPizza = new Pizza("Pizza Personalizata", size, basePrice, selectedIngredients);
+            pizzas.Add(customPizza);
+
+            // Afișăm detaliile și defalcarea prețului
+            decimal totalPrice = customPizza.GetPrice();
+            decimal ingredientsCost = totalPrice - basePrice;
+            consoleService.WriteLine($"\nPizza personalizata adaugata la comanda!");
+            consoleService.WriteLine($"Pret total: {totalPrice} RON");
+            consoleService.WriteLine($"  - Pret baza: {basePrice} RON");
+            consoleService.WriteLine($"  - Cost ingrediente: {ingredientsCost} RON");
         }
 
         static void ViewMenu(Pizzeria pizzeria, IConsoleService consoleService)
@@ -405,7 +560,7 @@ class Program
             List<Ingredient> ingredients = new List<Ingredient>();
             while (true)
             {
-                consoleService.WriteLine("Introdu numele ingredientului (or 'done' to stop):");
+                consoleService.WriteLine("Introdu numele ingredientului (sau 'done' pentru a termina):");
                 string ingredientName = consoleService.ReadLine();
                 if (ingredientName.ToLower() == "done")
                 {
@@ -536,9 +691,11 @@ class Program
 
         static void ViewOrdersByDate(Pizzeria pizzeria, IConsoleService consoleService)
         {
+            // Solicităm data pentru care dorim să vedem comenzile
             consoleService.WriteLine("\nIntroduceti data pentru care doriti sa vedeti comenzile (format: dd/MM/yyyy):");
             if (DateTime.TryParse(consoleService.ReadLine(), out DateTime date))
             {
+                // Obținem toate comenzile din ziua respectivă
                 var orders = pizzeria.GetOrdersByDate(date);
                 if (!orders.Any())
                 {
@@ -546,6 +703,7 @@ class Program
                     return;
                 }
 
+                // Afișăm detaliile fiecărei comenzi
                 consoleService.WriteLine($"\nComenzi pentru data {date.ToShortDateString()}:");
                 foreach (var order in orders)
                 {
@@ -561,6 +719,8 @@ class Program
                     }
                     consoleService.WriteLine("-------------------");
                 }
+
+                // Afișăm sumarul zilei
                 consoleService.WriteLine($"\nTotal comenzi in aceasta zi: {orders.Count}");
                 consoleService.WriteLine($"Valoare totală: {orders.Sum(o => o.GetTotalCost())} RON");
             }
@@ -572,6 +732,7 @@ class Program
 
         static void ViewPopularPizzas(Pizzeria pizzeria, IConsoleService consoleService)
         {
+            // Obținem lista de pizza ordonată după popularitate
             var popularPizzas = pizzeria.GetMostPopularPizzas();
             if (!popularPizzas.Any())
             {
@@ -579,14 +740,17 @@ class Program
                 return;
             }
 
+            // Afișăm clasamentul pizzelor
             consoleService.WriteLine("\nTop cele mai populare pizza:");
             int rank = 1;
             foreach (var pizza in popularPizzas)
             {
+                // Calculăm numărul total de comenzi pentru această pizza
                 var orderCount = pizzeria.GetOrders()
                     .SelectMany(o => o.GetPizzas())
                     .Count(p => p.GetName() == pizza.GetName());
 
+                // Afișăm detaliile pentru fiecare pizza
                 consoleService.WriteLine($"{rank}. {pizza.GetName()}");
                 consoleService.WriteLine($"   Comenzi: {orderCount}");
                 consoleService.WriteLine($"   Preț: {pizza.GetPrice()} RON");
@@ -598,6 +762,7 @@ class Program
 
         static void ViewRevenueReport(Pizzeria pizzeria, IConsoleService consoleService)
         {
+            // Solicităm perioada pentru raport
             consoleService.WriteLine("\nIntroduceti data de inceput (format: dd/MM/yyyy):");
             if (!DateTime.TryParse(consoleService.ReadLine(), out DateTime startDate))
             {
@@ -612,28 +777,34 @@ class Program
                 return;
             }
 
+            // Validăm perioada selectată
             if (startDate > endDate)
             {
                 consoleService.WriteLine("Data de inceput nu poate fi mai mare decat data de sfarsit!");
                 return;
             }
 
+            // Calculăm statisticile pentru perioada selectată
             decimal totalRevenue = pizzeria.GetTotalRevenue(startDate, endDate);
             var ordersInPeriod = pizzeria.GetOrders()
                 .Where(o => o.GetOrderDate().Date >= startDate.Date && o.GetOrderDate().Date <= endDate.Date)
                 .ToList();
 
+            // Afișăm raportul detaliat
             consoleService.WriteLine($"\nRaport venituri pentru perioada {startDate.ToShortDateString()} - {endDate.ToShortDateString()}:");
             consoleService.WriteLine($"Numar total comenzi: {ordersInPeriod.Count}");
             consoleService.WriteLine($"Venit total: {totalRevenue} RON");
             
             if (ordersInPeriod.Any())
             {
+                // Calculăm valoarea medie per comandă
                 decimal averageOrderValue = totalRevenue / ordersInPeriod.Count;
                 consoleService.WriteLine($"Valoare medie comanda: {averageOrderValue:F2} RON");
                 
+                // Calculăm procentul comenzilor cu livrare
                 var deliveryOrders = ordersInPeriod.Count(o => o.GetIsDelivery());
-                consoleService.WriteLine($"Comenzi cu livrare: {deliveryOrders} ({(deliveryOrders * 100.0 / ordersInPeriod.Count):F1}%)");
+                double deliveryPercentage = (deliveryOrders * 100.0 / ordersInPeriod.Count);
+                consoleService.WriteLine($"Comenzi cu livrare: {deliveryOrders} ({deliveryPercentage:F1}%)");
                 
                 var mostExpensiveOrder = ordersInPeriod.MaxBy(o => o.GetTotalCost());
                 consoleService.WriteLine($"Cea mai mare comandă: {mostExpensiveOrder.GetTotalCost()} RON");
