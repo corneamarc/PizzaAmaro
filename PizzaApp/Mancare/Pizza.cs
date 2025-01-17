@@ -25,7 +25,7 @@ public class Pizza
         Name = name;
         Size = size;
         BasePrice = basePrice;
-        Ingredients = ingredients ?? new List<Ingredient>();
+        Ingredients = ingredients ?? new List<Ingredient>(); //operatorul de coalescenta nula
     }
 
     public string GetName() => Name;
